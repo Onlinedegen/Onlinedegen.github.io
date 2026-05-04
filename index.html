@@ -10,13 +10,29 @@
 
     <h1>Global Time Website</h1>
 
-    <form class="timeForm">
-        <input type="text" class="cityInput" placeholder="Enter name of a city">
-        <button type="submit">Enter</button>
-    </form>
+    <div class="clock-container">
+        <div class="clock">
+            <h3>New York</h3>
+            <p id="clock-ny">Loading...</p>
+        </div>
 
-    <div></div>
+        <div class="clock">
+            <h3>London</h3>
+            <p id="clock-ny">Loading...</p>
+        </div>
+
+        <div class="clock">
+            <h3>Tokyo</h3>
+            <p id="clock-ny">Loading...</p>
+        </div>
+    </div>
+
+    <input id="searchBar" type="text" placeholder="Search timezone (e.g. Europe/Paris)">
+    <button id="searchButton">Search</button>
+
+    <h2 id="searchResult"></h2>
 
     <script src="index.js"></script>
 </body>
 </html>
+œ
