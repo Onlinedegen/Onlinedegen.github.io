@@ -1,41 +1,74 @@
 
-async function fetchTime(zone, elementId) {
-    try{
-        const res = await fetch(`https://worldtimeapi.org/api/timezone/${zone}`);
+const BASE = "https://time.now/developer/api";
+
+async function getTime(zone) {
+    const res = await fetch(`${BASE}/timezone/${zone}`);
+    const data = await res.json();
+
+    const utc = new Date(data.utc_datetime);
+    const time = utc.toLocaleTimeString("en-us", {
+        timeZone: data.timezone
+    });
+
+    return time;
+}
+
+async function updateLocal() {
+    try {
+        const res = await fetch(`${BASE}/ip`);
         const data = await res.json();
         const time = new Date(data.datetime).toLocaleTimeString();
-        document.getElementById(elementId).textContent = time;
-    }
-    catch{
-        document.getElementById(elementId).textContent = "Error loading time";
+        document.getElementById("localTime").textContent =
+            `Local Time (${data.timezone}): ${time}`;
+    } catch {
+        document.getElementById("localTime").textContent = "Error loading local time";
     }
 }
 
-function updateClocks(){
-    fetchTime("America/New_York", "clock-ny");
-    fetchTime("Europe/London", "clock-london");
-    fetchTime("Asia/Tokyo", "clock-tokyo");
+async function addCityCard(zone) {
+    const container = document.getElementById("cityList");
+
+    const card = document.createElement("div");
+    card.className = "clock-card";
+    card.dataset.zone = zone;
+
+    card.innerHTML = `
+        <h3>${zone}</h3>
+        <p class="time">Loading...</p>
+        <button class="removeBtn">Remove</button>
+    `;
+
+    container.appendChild(card);
+
+    card.querySelector(".removeBtn").onclick = () => card.remove();
 }
 
-updateClocks();
-setInterval(updateClocks, 1000);
-
-document.getElementById("searchButton").addEventListener("click", async () => {
-    const query = document.getElementById("searchBar").value.trim();
-    const result = document.getElementById("searchResult");
-
-    if(!query){
-        result.textContent = "Please enter a timezone";
-        return;
+async function updateCityClocks() {
+    const cards = document.querySelectorAll(".clock-card");
+    for (const card of cards) {
+        const zone = card.dataset.zone;
+        try {
+            const time = await getTime(zone);
+            card.querySelector(".time").textContent = time;
+        } catch {
+            card.querySelector(".time").textContent = "Error";
+        }
     }
+}
 
-    try{
-        const res = await fetch(`https://worldtimeapi.org/api/timezone/${query}`);
-        const data = await res.json();
-        const time = new Date(data.datetime).toLocaleTimeString();
-        result.textContent = `${query}: ${time}`;
-    }
-    catch{
-        result.textContent = "Invalid timezone";
-    }
-});
+// Theme toggle
+document.getElementById("themeToggle").onclick = () => {
+    document.body.classList.toggle("dark");
+};
+
+// Add city button
+document.getElementById("addCity").onclick = () => {
+    const zone = document.getElementById("citySelect").value;
+    addCityCard(zone);
+};
+
+// Start updating
+setInterval(updateLocal, 1000);
+setInterval(updateCityClocks, 1000);
+updateLocal();
+updateCityClocks();
